@@ -16,9 +16,9 @@ BoidGroup::~BoidGroup()
 {
 }
 
-bool BoidGroup::RegisterBoid( ABoid* boid )
+bool BoidGroup::RegisterBoid( const TWeakObjectPtr< ABoid >& boid )
 {
-    if( m_registeredBoids.Num() < m_maxSize )
+    if( m_registeredBoids.Num() < m_maxSize && boid.IsValid() )
     {
         m_registeredBoids.Push( boid );
         boid->AddToGroup( SharedThis( this ) );
@@ -29,9 +29,18 @@ bool BoidGroup::RegisterBoid( ABoid* boid )
     return false;
 }
 
-bool BoidGroup::UnregisterBoid( ABoid* boid )
+bool BoidGroup::UnregisterBoid( const TWeakObjectPtr< ABoid >& boid )
 {
-    return m_registeredBoids.Remove( boid ) > 0;
+    for( int32 i = 0; i < m_registeredBoids.Num(); ++i )
+    {
+        if( m_registeredBoids[i].Get() == boid.Get() )
+        {
+            m_registeredBoids.RemoveAtSwap( i );
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void BoidGroup::SetMaxGroupSize( int32 maxSize )
@@ -71,9 +80,12 @@ void BoidGroup::VerifyGroup()
 {
     while( m_registeredBoids.Num() > m_maxSize )
     {
-        ABoid* removedBoid = m_registeredBoids.Pop();
-        removedBoid->AddToGroup( nullptr );
-        m_owner->RequestAssign( removedBoid );
+        TWeakObjectPtr< ABoid > removedBoid = m_registeredBoids.Pop();
+        if( removedBoid.IsValid() )
+        {
+            removedBoid->AddToGroup( nullptr );
+            m_owner->RequestAssign( removedBoid );
+        }
     }
 }
 
@@ -83,8 +95,16 @@ void BoidGroup::UpdateGroupCenter()
 
     int validBoidsNum = 0;
 
-    for( ABoid* boid : m_registeredBoids )
+    for( int32 i = 0; i < m_registeredBoids.Num(); ++i )
     {
+        const TWeakObjectPtr< ABoid >& boid = m_registeredBoids[i];
+        if( !boid.IsValid() )
+        {
+            m_registeredBoids.RemoveAtSwap( i );
+            --i;
+            continue;
+        }
+
         m_groupCenter += boid->GetActorLocation();
         ++validBoidsNum;
     }

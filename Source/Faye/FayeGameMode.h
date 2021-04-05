@@ -17,9 +17,9 @@ class AFayeGameMode : public AGameModeBase
 public:
 	AFayeGameMode();
 
-	UBoidGroupsController* GetBoidGroupsController();
-	UDifficultyManager* GetDifficultyManager();
-	UScoreManager* GetScoreManager();
+	TWeakObjectPtr< UBoidGroupsController > GetBoidGroupsController();
+	TWeakObjectPtr< UDifficultyManager > GetDifficultyManager();
+	TWeakObjectPtr< UScoreManager > GetScoreManager();
 
 private:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, DisplayName = "Difficulty Manager", meta = (AllowPrivateAccess = "true") )

@@ -24,14 +24,11 @@ void AFayePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if( AFayeCharacter* myPawn = Cast<AFayeCharacter>( GetPawn() ) )
-	{
-		m_controlledPawn = myPawn;
-		ensure( m_controlledPawn );
+	m_controlledPawn = Cast<AFayeCharacter>( GetPawn() );
+	ensureAlways( m_controlledPawn.IsValid() );
 
-		m_pawnMovementComponent = m_controlledPawn->GetMovementComponent();
-		ensure( m_pawnMovementComponent );
-	}
+	m_pawnMovementComponent = m_controlledPawn->GetMovementComponent();
+	ensureAlways( m_pawnMovementComponent.IsValid() );
 }
 
 void AFayePlayerController::PlayerTick(float DeltaTime)

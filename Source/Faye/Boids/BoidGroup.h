@@ -11,8 +11,8 @@ public:
 	BoidGroup( int32 size, UBoidGroupsController* owner );
 	~BoidGroup();
 
-	bool RegisterBoid( ABoid* boid );
-	bool UnregisterBoid( ABoid* boid );
+	bool RegisterBoid( const TWeakObjectPtr< ABoid >& boid );
+	bool UnregisterBoid( const TWeakObjectPtr< ABoid >& boid );
 	void SetMaxGroupSize( int32 maxSize );
 
 	bool IsFull();
@@ -31,9 +31,9 @@ private:
 	void VerifyGroup();
 	void UpdateGroupCenter();
 
-	UBoidGroupsController* m_owner;
+	TWeakObjectPtr< UBoidGroupsController > m_owner;
 	int32 m_maxSize;
-	TArray< ABoid* > m_registeredBoids;
+	TArray< TWeakObjectPtr< ABoid > > m_registeredBoids;
 
 	FVector m_groupCenter;
 };

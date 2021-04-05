@@ -101,8 +101,17 @@ void AFayeCharacter::EnableRepulsiveForce( bool value )
 {
 	m_isRepulsiveForceEnabled = value;
 
-	for( ABoid* nearbyBoid : m_nearbyBoids )
+	for( int32 i = 0; i < m_nearbyBoids.Num(); ++i )
 	{
+		const TWeakObjectPtr< ABoid >& nearbyBoid = m_nearbyBoids[i];
+
+		if( !nearbyBoid.IsValid() )
+		{
+			m_nearbyBoids.RemoveAtSwap( i );
+			--i;
+			continue;
+		}
+
 		ApplyRepulsionForce( nearbyBoid );
 	}
 }
@@ -132,10 +141,14 @@ float AFayeCharacter::GetVisibilityRadius()
 	return m_visibilityArea->GetScaledSphereRadius();
 }
 
-void AFayeCharacter::Consume( ABoid* boid )
+void AFayeCharacter::Consume( const TWeakObjectPtr< ABoid >& boid )
 {
-	boid->Destroy();
-	m_scoreManager->AddScore( 1.f );
+	if( boid.IsValid() )
+	{
+		boid->Destroy();
+		ensureAlways( m_scoreManager.IsValid() );
+		m_scoreManager->AddScore( 1.f );
+	}
 }
 
 void AFayeCharacter::OnOverlap(
@@ -171,9 +184,10 @@ void AFayeCharacter::OnOverlapEnd(
 	}
 }
 
-void AFayeCharacter::ApplyRepulsionForce( ABoid* target )
+void AFayeCharacter::ApplyRepulsionForce( const TWeakObjectPtr< ABoid >& target )
 {
-	UMovementComponent* movComp = target->GetMovementComponent();
+	ensureAlways( target.IsValid() );
+	TWeakObjectPtr< UMovementComponent > movComp = target->GetMovementComponent();
 	movComp->StopMovementImmediately();
 	movComp->AddRadialForce( GetActorLocation(), m_repulsionArea->GetScaledBoxExtent().Size() * 2.f, m_repulsionForce, ERadialImpulseFalloff::RIF_Constant );
 	target->ApplyStun();

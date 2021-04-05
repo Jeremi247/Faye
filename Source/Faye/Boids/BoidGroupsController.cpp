@@ -40,7 +40,7 @@ void UBoidGroupsController::BeginPlay()
     m_player = Cast< AFayeCharacter >( GetWorld()->GetFirstPlayerController()->GetPawn() );
 
     AFayeGameMode* gameMode = Cast< AFayeGameMode >( GetWorld()->GetAuthGameMode() );
-    UDifficultyManager* diffManager = gameMode->GetDifficultyManager();
+    TWeakObjectPtr< UDifficultyManager > diffManager = gameMode->GetDifficultyManager();
     diffManager->OnDifficultyChanged.AddDynamic( this, &UBoidGroupsController::OnDifficultyChanged );
     OnDifficultyChanged( diffManager->GetCurrentDifficulty() );
 }
@@ -127,7 +127,7 @@ bool UBoidGroupsController::FindSafeSpawnPosition( const FVector& groupPosition,
     FVector playerPosition( 0, 0, 200 ); //200 for simulation purposes when player doesn't exist to be above ground
     float minimumDistance = 0.f;
 
-    if( m_player )
+    if( m_player.IsValid() )
     {
         playerPosition = m_player->GetActorLocation();
         minimumDistance = m_player->GetVisibilityRadius();
@@ -176,10 +176,13 @@ void UBoidGroupsController::OnDifficultyChanged( const FDifficultyWrapper& newDi
     SetBoidsSoftLimit( newDifficulty.SoftBoidLimit );
 }
 
-void UBoidGroupsController::RequestAssign( ABoid* boid )
+void UBoidGroupsController::RequestAssign( const TWeakObjectPtr< ABoid >& boid )
 {
-    ensureAlways( !boid->GetCurrentGroup() );
-    m_unassignedBoids.AddUnique( boid );
+    if( boid.IsValid() )
+    {
+        ensureAlways( !boid->GetCurrentGroup() );
+        m_unassignedBoids.AddUnique( boid );
+    }
 }
 
 void UBoidGroupsController::AssignBoids()
@@ -187,19 +190,26 @@ void UBoidGroupsController::AssignBoids()
     //TO DO: split groups into empty and full separately to increase assigning performance
     for( int32 i = 0; i < m_unassignedBoids.Num(); ++i )
     {
-        if( !m_unassignedBoids[i]->HasActorBegunPlay() || !m_unassignedBoids[i]->IsActorInitialized() )
-        {
-            continue;
-        }
-
-        if( m_unassignedBoids[i]->IsActorBeingDestroyed() )
+        const TWeakObjectPtr< ABoid >& boid = m_unassignedBoids[i];
+        if( !boid.IsValid() )
         {
             m_unassignedBoids.RemoveAtSwap( i );
             --i;
             continue;
         }
 
-        ABoid* boid = m_unassignedBoids[i];
+        if( !boid->HasActorBegunPlay() || !boid->IsActorInitialized() )
+        {
+            continue;
+        }
+
+        if( boid->IsActorBeingDestroyed() )
+        {
+            m_unassignedBoids.RemoveAtSwap( i );
+            --i;
+            continue;
+        }
+
         bool foundGroup = false;
 
         for( const TSharedPtr< BoidGroup >& boidGroup : m_groups )

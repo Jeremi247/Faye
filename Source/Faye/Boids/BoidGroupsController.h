@@ -20,7 +20,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent( float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
 
-	void RequestAssign( ABoid* boid );
+	void RequestAssign( const TWeakObjectPtr< ABoid >& boid );
 	void NotifyNewDifficulty( const FDifficultyWrapper& newDifficulty );
 
 private:
@@ -46,7 +46,7 @@ private:
 	int32 m_boidsSoftLimit;
 
 	TArray< TSharedPtr< BoidGroup > > m_groups;
-	TArray< ABoid* > m_unassignedBoids;
+	TArray< TWeakObjectPtr< ABoid > > m_unassignedBoids;
 
-	AFayeCharacter* m_player;
+	TWeakObjectPtr< AFayeCharacter > m_player;
 };

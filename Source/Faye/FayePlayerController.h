@@ -41,8 +41,8 @@ private:
 
 	float m_dashTime;
 
-	AFayeCharacter* m_controlledPawn;
-	UMovementComponent* m_pawnMovementComponent;
+	TWeakObjectPtr< AFayeCharacter > m_controlledPawn;
+	TWeakObjectPtr< UMovementComponent > m_pawnMovementComponent;
 
 	bool m_isDashInProgress;
 	bool m_moveToMouseCursor;

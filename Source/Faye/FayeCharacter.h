@@ -52,8 +52,8 @@ private:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex );
 
-	void ApplyRepulsionForce( ABoid* target );
-	void Consume( ABoid* boid );
+	void ApplyRepulsionForce( const TWeakObjectPtr< ABoid >& target );
+	void Consume( const TWeakObjectPtr< ABoid >& boid );
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Repulsion, DisplayName = "Repulsion Area", meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* m_repulsionArea;
@@ -71,8 +71,8 @@ private:
 	UPROPERTY( EditAnywhere, Category = Repulsion, DisplayName = "Repulsion Force" )
 	float m_repulsionForce;
 
-	UScoreManager* m_scoreManager;
-	TArray< ABoid* > m_nearbyBoids;
+	TWeakObjectPtr< UScoreManager > m_scoreManager;
+	TArray< TWeakObjectPtr< ABoid > > m_nearbyBoids;
 	bool m_isRepulsiveForceEnabled;
 };
 

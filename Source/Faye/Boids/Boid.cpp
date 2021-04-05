@@ -36,8 +36,8 @@ void ABoid::BeginPlay()
 {
 	CacheComponents();
 
-	AFayeGameMode* gameMode = GetWorld()->GetAuthGameMode< AFayeGameMode >();
-	UDifficultyManager* difficultyManager = gameMode->GetDifficultyManager();
+	TWeakObjectPtr< AFayeGameMode > gameMode = GetWorld()->GetAuthGameMode< AFayeGameMode >();
+	TWeakObjectPtr< UDifficultyManager > difficultyManager = gameMode->GetDifficultyManager();
 	difficultyManager->OnDifficultyChanged.AddDynamic( this, &ABoid::OnDifficultyChanged );
 	OnDifficultyChanged( difficultyManager->GetCurrentDifficulty() );
 
@@ -58,7 +58,6 @@ void ABoid::CacheComponents()
 	m_movementComponent = GetMovementComponent();
 
 	AFayeGameMode* gameMode = GetWorld()->GetAuthGameMode<AFayeGameMode>();
-	m_boidGroupsController = gameMode->GetBoidGroupsController();
 }
 
 void ABoid::Tick(float DeltaTime)
@@ -102,8 +101,17 @@ void ABoid::UpdateSteeringVectors()
 	m_avoidanceDirection = FVector::ZeroVector;
 	m_groupDirection = FVector::ZeroVector;
 
-	for( ABoid* neighbour : m_neighbours )
+	for( int32 i = 0; i < m_neighbours.Num(); ++i )
 	{
+		const TWeakObjectPtr< ABoid >& neighbour = m_neighbours[i];
+
+		if( !neighbour.IsValid() )
+		{
+			m_neighbours.RemoveAtSwap( i );
+			--i;
+			continue;
+		}
+
 		if( neighbour->GetCurrentGroup() == m_myGroup )
 		{
 			FVector direction = neighbour->GetActorLocation() - GetActorLocation();
@@ -195,13 +203,16 @@ void ABoid::ApplyStun()
 	m_currentStunLength = m_stunLength;
 }
 
-bool ABoid::CanDespawnSafely( AFayeCharacter* player )
+bool ABoid::CanDespawnSafely( const TWeakObjectPtr< AFayeCharacter >& player )
 {
-	FVector distanceFromPlayer = player->GetActorLocation() - GetActorLocation();
-
-	if( distanceFromPlayer.Size() < player->GetVisibilityRadius() )
+	if( player.IsValid() )
 	{
-		return false;
+		FVector distanceFromPlayer = player->GetActorLocation() - GetActorLocation();
+
+		if( distanceFromPlayer.Size() < player->GetVisibilityRadius() )
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -216,7 +227,7 @@ void ABoid::BeginDestroy()
 {
 	if( m_myGroup )
 	{
-		verify( m_myGroup->UnregisterBoid( this ) );
+		m_myGroup->UnregisterBoid( this );
 	}
 
 	Super::BeginDestroy();

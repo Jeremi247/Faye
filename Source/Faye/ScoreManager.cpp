@@ -22,6 +22,7 @@ void UScoreManager::TickComponent( float DeltaTime, ELevelTick TickType, FActorC
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
 	ValidateScorePerMinute();
+	ensureAlways( m_difficultyManager.IsValid() );
 	m_difficultyManager->VerifyDifficultyLevel( m_pointsPerMinute );
 }
 

@@ -15,17 +15,17 @@ AFayeGameMode::AFayeGameMode()
 	m_scoreManager = CreateDefaultSubobject< UScoreManager >( "ScoreManager" );
 }
 
-UBoidGroupsController* AFayeGameMode::GetBoidGroupsController()
+TWeakObjectPtr< UBoidGroupsController > AFayeGameMode::GetBoidGroupsController()
 {
 	return m_boidGroupsController;
 }
 
-UDifficultyManager* AFayeGameMode::GetDifficultyManager()
+TWeakObjectPtr< UDifficultyManager > AFayeGameMode::GetDifficultyManager()
 {
 	return m_difficultyManager;
 }
 
-UScoreManager* AFayeGameMode::GetScoreManager()
+TWeakObjectPtr< UScoreManager > AFayeGameMode::GetScoreManager()
 {
 	return m_scoreManager;
 }

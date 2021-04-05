@@ -26,12 +26,9 @@ public:
 	void AddToGroup( const TSharedPtr< BoidGroup >& newGroup );
 
 	void ApplyStun();
-	bool CanDespawnSafely( AFayeCharacter* player );
+	bool CanDespawnSafely( const TWeakObjectPtr< AFayeCharacter >& player );
 
 	bool HasAnyNeighbours();
-
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
-	USphereComponent* NeighbourDetection;
 
 private:
 	void CacheComponents();
@@ -60,6 +57,9 @@ private:
 	UFUNCTION()
 	void OnDifficultyChanged( const FDifficultyWrapper& newDifficulty );
 
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true") )
+	USphereComponent* NeighbourDetection;
+
 	UPROPERTY( EditAnywhere, Category = "Speed controll", DisplayName = "Min Speed" )
 	float m_minSpeed;
 	UPROPERTY( EditAnywhere, Category = "Speed controll", DisplayName = "Max Speed" )
@@ -86,11 +86,10 @@ private:
 	UPROPERTY( EditAnywhere, Category = "Misc", DisplayName = "Stun Rotation Speed" )
 	float m_stunRotationSpeed;
 
-	UPawnMovementComponent* m_movementComponent;
+	TWeakObjectPtr< UPawnMovementComponent > m_movementComponent;
 
-	TArray< ABoid* > m_neighbours;
+	TArray< TWeakObjectPtr< ABoid > > m_neighbours;
 	TSharedPtr< BoidGroup > m_myGroup;
-	UBoidGroupsController* m_boidGroupsController;
 	int32 m_overlappingObstacles;
 
 	FVector m_localFlockForward;

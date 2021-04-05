@@ -24,7 +24,7 @@ protected:
 
 	void ValidateScorePerMinute();
 
-	UDifficultyManager* m_difficultyManager;
+	TWeakObjectPtr< UDifficultyManager > m_difficultyManager;
 
 	TArray< std::pair< float, float > > m_scoreTimeStamps;
 	float m_globalScore;
